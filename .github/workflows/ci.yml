@@ -34,9 +34,12 @@ jobs:
       - name: Get latest run_id
         id: runid
         run: |
-          RUN_ID=$(ls -td mlruns/*/*/ | head -n 1 | awk -F'/' '{print $(NF-1)}')
+          META=$(ls -t mlruns/*/*/meta.yaml | head -n 1)
+          RUN_ID=$(basename "$(dirname "$META")")
+          EXP_ID=$(basename "$(dirname "$(dirname "$META")")")
           echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
-          echo "Latest RUN_ID=$RUN_ID"
+          echo "EXP_ID=$EXP_ID" >> $GITHUB_OUTPUT
+          echo "Latest EXP_ID=$EXP_ID RUN_ID=$RUN_ID"
 
       # Upload mlruns (Skilled)
       - name: Upload mlruns (artifact)
