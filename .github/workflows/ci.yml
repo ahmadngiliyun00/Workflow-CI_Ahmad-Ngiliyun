@@ -2,12 +2,13 @@ name: Workflow CI - MLflow Project
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
-  train:
+  train_and_dockerize:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,12 +23,36 @@ jobs:
           python -m pip install --upgrade pip
           pip install mlflow==2.19.0
 
+      # (Basic) retrain model via MLflow Project
       - name: Run MLflow Project
         run: |
           mlflow run MLProject -e main --env-manager=local
 
-      - name: Upload mlruns (artifact)
+      # (Skilled) upload tracking folder from project (pastikan path sesuai)
+      - name: Upload MLProject mlruns (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: mlruns
           path: MLProject/mlruns
+
+      # ---- Kriteria 4 (Advance): build docker image via mlflow build-docker + push ----
+      - name: Set image tag
+        id: vars
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image with MLflow
+        run: |
+          mlflow build-docker -m MLProject -n ${{ secrets.DOCKERHUB_USERNAME }}/workflow-ci-student-success:${{ steps.vars.outputs.TAG }}
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/workflow-ci-student-success:${{ steps.vars.outputs.TAG }}
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/workflow-ci-student-success:${{ steps.vars.outputs.TAG }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/workflow-ci-student-success:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/workflow-ci-student-success:latest
