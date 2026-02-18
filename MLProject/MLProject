@@ -1,0 +1,5 @@
+name: workflow_ci_student_success
+
+entry_points:
+  main:
+    command: "python modelling.py"
