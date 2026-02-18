@@ -1,4 +1,4 @@
-name: Workflow CI - MLflow Project
+name: Workflow CI - MLflow Project + Docker
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.12.7"
 
       - name: Install MLflow
         run: |
@@ -48,7 +48,7 @@ jobs:
 
       - name: Build Docker image with MLflow
         run: |
-          mlflow build-docker -m MLProject -n ${{ secrets.DOCKERHUB_USERNAME }}/workflow-ci-student-success:${{ steps.vars.outputs.TAG }}
+          mlflow models build-docker -f MLProject -n ${{ secrets.DOCKERHUB_USERNAME }}/workflow-ci-student-success:${{ steps.vars.outputs.TAG }}
 
       - name: Push Docker image
         run: |
