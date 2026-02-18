@@ -24,10 +24,10 @@ jobs:
 
       - name: Run MLflow Project
         run: |
-          mlflow run MLProject -e main
+          mlflow run MLProject -e main --env-manager=local
 
       - name: Upload mlruns (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: mlruns
-          path: mlruns
+          path: MLProject/mlruns
